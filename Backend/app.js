@@ -106,4 +106,47 @@ class ToDoListOperations {
       console.error("Error while deleting the task:", error.message);
     }
   }
+
+  // Method for deleting multiple tasks from the list
+  deleteMultipleTasks(ids) {
+    try {
+      // Validate the input
+      if (!Array.isArray(ids) || ids.length === 0) {
+        throw new Error(
+          "An array of IDs is required to delete multiple tasks."
+        );
+      }
+
+      // Track deletion results
+      const deletedTasks = [];
+      const notFoundTasks = [];
+
+      // Loop through the provided IDs
+      ids.forEach((id) => {
+        if (id === undefined || id === null) {
+          notFoundTasks.push(`Invalid ID: ${id}`);
+        } else if (this.Data.has(id)) {
+          this.Data.delete(id);
+          deletedTasks.push(id);
+        } else {
+          notFoundTasks.push(`Task with ID ${id} does not exist.`);
+        }
+      });
+
+      // Log results
+      if (deletedTasks.length > 0) {
+        console.log(
+          `Successfully deleted tasks with IDs: ${deletedTasks.join(", ")}`
+        );
+      }
+
+      if (notFoundTasks.length > 0) {
+        console.warn(
+          `Could not delete the following tasks: ${notFoundTasks.join("; ")}`
+        );
+      }
+    } catch (error) {
+      console.error("Error while deleting multiple tasks:", error.message);
+    }
+  }
 }
