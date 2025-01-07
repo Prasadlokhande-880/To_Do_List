@@ -149,4 +149,27 @@ class ToDoListOperations {
       console.error("Error while deleting multiple tasks:", error.message);
     }
   }
+
+  // Method for showing all tasks
+  showAllTasks() {
+    try {
+      // Check if there are any tasks in the list
+      if (this.Data.size === 0) {
+        console.log("No tasks available.");
+        return;
+      }
+
+      console.log("All Tasks:");
+      // Iterate over the Map and log each task
+      this.Data.forEach((task, id) => {
+        console.log(
+          `ID: ${id}, Description: ${task.descriptions}, Due Date: ${
+            task.dueDate || "No due date"
+          }, Completed: ${task.completed}`
+        );
+      });
+    } catch (error) {
+      console.error("Error while displaying tasks:", error.message);
+    }
+  }
 }
