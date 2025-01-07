@@ -1,3 +1,9 @@
+const express = require("express");
+const app = express();
+
+app.use(express.json()); // Middleware to parse JSON request bodies
+
+// Task structure class
 class TaskStructure {
   constructor(id, descriptions = "", dueDate = "", completed = false) {
     this.id = id;
@@ -7,169 +13,136 @@ class TaskStructure {
   }
 }
 
+// Operations for managing the to-do list
 class ToDoListOperations {
   constructor() {
-    this.idIncrement = 0; // Used to generate unique IDs
-    this.Data = new Map(); // To store tasks with unique IDs
+    this.idIncrement = 0;
+    this.Data = new Map();
   }
 
   // Add a new task to the list
   addTask(descriptions = "", dueDate = "", completed = false) {
-    try {
-      // Validate input
-      if (typeof descriptions !== "string" || descriptions.trim() === "") {
-        throw new Error("Task description must be a non-empty string.");
-      }
-
-      if (dueDate && isNaN(Date.parse(dueDate))) {
-        throw new Error("Invalid date format. Please provide a valid date.");
-      }
-
-      if (typeof completed !== "boolean") {
-        throw new Error("Completed must be a boolean value (true or false).");
-      }
-
-      // Create a new task
-      const task = new TaskStructure(
-        this.idIncrement,
-        descriptions,
-        dueDate,
-        completed
-      );
-
-      // Add the task to the Map with a unique ID
-      this.Data.set(this.idIncrement, task);
-
-      // Increment the ID counter
-      this.idIncrement++;
-
-      console.log("Task added successfully:", task);
-      return task; // Return the added task for reference
-    } catch (error) {
-      console.error("Error adding task:", error.message);
-      return null; // Return null if there's an error
+    if (typeof descriptions !== "string" || descriptions.trim() === "") {
+      throw new Error("Task description must be a non-empty string.");
     }
+    if (dueDate && isNaN(Date.parse(dueDate))) {
+      throw new Error("Invalid date format.");
+    }
+    if (typeof completed !== "boolean") {
+      throw new Error("Completed must be a boolean value.");
+    }
+
+    const task = new TaskStructure(
+      this.idIncrement,
+      descriptions,
+      dueDate,
+      completed
+    );
+    this.Data.set(this.idIncrement, task);
+    this.idIncrement++;
+    return task;
   }
 
-  // this is the function for the mark the task as completed
-
+  // Mark a task as completed
   taskCompleted(id) {
-    try {
-      // Validate the input
-      if (id === undefined || id === null) {
-        throw new Error("ID is required to mark a task as completed.");
-      }
-
-      // Check if the task with the given ID exists
-      if (!this.Data.has(id)) {
-        throw new Error(`Task with ID ${id} does not exist.`);
-      }
-
-      // Retrieve the task and mark it as completed
-      const task = this.Data.get(id);
-      if (task.completed) {
-        console.log(`Task with ID ${id} is already marked as completed.`);
-        return;
-      }
-
-      task.completed = true;
-
-      // Update the task in the Map
-      this.Data.set(id, task);
-
-      console.log(
-        `Task with ID ${id} has been successfully marked as completed.`
-      );
-    } catch (error) {
-      console.error("Error while marking task as completed:", error.message);
+    if (!this.Data.has(id)) {
+      throw new Error(`Task with ID ${id} does not exist.`);
     }
+    const task = this.Data.get(id);
+    if (task.completed) {
+      throw new Error(`Task with ID ${id} is already completed.`);
+    }
+    task.completed = true;
+    this.Data.set(id, task);
+    return task;
   }
 
-  // This is the code for deleting a task from the list
+  // Delete a task
   deleteTask(id) {
-    try {
-      // Check if the ID is provided
-      if (id === undefined || id === null) {
-        throw new Error("ID is required for deleting the task.");
-      }
-
-      // Check if the task with the given ID exists
-      if (!this.Data.has(id)) {
-        throw new Error(`Task with ID ${id} does not exist.`);
-      }
-
-      // Delete the task from the Map
-      this.Data.delete(id);
-
-      console.log(`Task with ID ${id} has been successfully deleted.`);
-    } catch (error) {
-      console.error("Error while deleting the task:", error.message);
+    if (!this.Data.has(id)) {
+      throw new Error(`Task with ID ${id} does not exist.`);
     }
+    this.Data.delete(id);
   }
 
-  // Method for deleting multiple tasks from the list
+  // Delete multiple tasks
   deleteMultipleTasks(ids) {
-    try {
-      // Validate the input
-      if (!Array.isArray(ids) || ids.length === 0) {
-        throw new Error(
-          "An array of IDs is required to delete multiple tasks."
-        );
-      }
-
-      // Track deletion results
-      const deletedTasks = [];
-      const notFoundTasks = [];
-
-      // Loop through the provided IDs
-      ids.forEach((id) => {
-        if (id === undefined || id === null) {
-          notFoundTasks.push(`Invalid ID: ${id}`);
-        } else if (this.Data.has(id)) {
-          this.Data.delete(id);
-          deletedTasks.push(id);
-        } else {
-          notFoundTasks.push(`Task with ID ${id} does not exist.`);
-        }
-      });
-
-      // Log results
-      if (deletedTasks.length > 0) {
-        console.log(
-          `Successfully deleted tasks with IDs: ${deletedTasks.join(", ")}`
-        );
-      }
-
-      if (notFoundTasks.length > 0) {
-        console.warn(
-          `Could not delete the following tasks: ${notFoundTasks.join("; ")}`
-        );
-      }
-    } catch (error) {
-      console.error("Error while deleting multiple tasks:", error.message);
+    if (!Array.isArray(ids)) {
+      throw new Error("IDs should be an array.");
     }
+    ids.forEach((id) => {
+      if (this.Data.has(id)) {
+        this.Data.delete(id);
+      }
+    });
   }
 
-  // Method for showing all tasks
+  // Show all tasks
   showAllTasks() {
-    try {
-      // Check if there are any tasks in the list
-      if (this.Data.size === 0) {
-        console.log("No tasks available.");
-        return;
-      }
-
-      console.log("All Tasks:");
-      // Iterate over the Map and log each task
-      this.Data.forEach((task, id) => {
-        console.log(
-          `ID: ${id}, Description: ${task.descriptions}, Due Date: ${
-            task.dueDate || "No due date"
-          }, Completed: ${task.completed}`
-        );
-      });
-    } catch (error) {
-      console.error("Error while displaying tasks:", error.message);
-    }
+    return Array.from(this.Data.values());
   }
 }
+
+// Create an instance of the ToDoListOperations class
+const toDoList = new ToDoListOperations();
+
+// Routes
+
+// Get all tasks
+app.get("/getAllTasks", (req, res) => {
+  try {
+    const tasks = toDoList.showAllTasks();
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add a new task
+app.post("/addTask", (req, res) => {
+  try {
+    const { descriptions, dueDate, completed } = req.body;
+    const task = toDoList.addTask(descriptions, dueDate, completed);
+    res.status(201).json(task);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Mark a task as completed
+app.patch("/markCompleted/:id", (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const task = toDoList.taskCompleted(id);
+    res.json(task);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete a task
+app.delete("/deleteTask/:id", (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    toDoList.deleteTask(id);
+    res.json({ message: `Task with ID ${id} deleted successfully.` });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete multiple tasks
+app.post("/deleteMultipleTasks", (req, res) => {
+  try {
+    const { ids } = req.body;
+    toDoList.deleteMultipleTasks(ids);
+    res.json({ message: "Selected tasks deleted successfully." });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log("Server is running on http://localhost:3000");
+});
