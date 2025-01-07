@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 
-app.use(express.json()); // Middleware to parse JSON request bodies
+app.use(express.json());
 
 // Task structure class
 class TaskStructure {
